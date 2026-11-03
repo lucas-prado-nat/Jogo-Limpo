@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo Limpo — Administrador</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0b0d0b;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        header {
+            padding: 24px 8%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #202720;
+        }
+
+        .logo {
+            color: #39d66b;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        nav a {
+            color: #ccc;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .section {
+            padding: 30px 8%;
+        }
+
+        h2 {
+            margin-bottom: 16px;
+        }
+
+        .caixa {
+            background: #141914;
+            border: 1px solid #29352b;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            max-width: 560px;
+        }
+
+        input {
+            display: block;
+            width: 100%;
+            background: #0b0d0b;
+            border: 1px solid #29352b;
+            color: white;
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+
+        button {
+            background: #39d66b;
+            color: #0b0d0b;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            opacity: 0.85;
+        }
+
+        button.secundario {
+            background: transparent;
+            color: #ccc;
+            border: 1px solid #29352b;
+        }
+
+        button.perigo {
+            background: #3a1a1a;
+            color: #ff7b7b;
+            border: 1px solid #5a2a2a;
+        }
+
+        .aviso {
+            margin-top: 12px;
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        .disputa {
+            background: #141914;
+            border: 1px solid #29352b;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 14px;
+        }
+
+        .disputa h3 {
+            margin-bottom: 6px;
+        }
+
+        .disputa p {
+            color: #aaa;
+            font-size: 14px;
+            margin-bottom: 14px;
+            line-height: 1.5;
+        }
+
+        .acoes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .oculto {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">JOGO LIMPO · ADMIN</div>
+        <nav><a href="/">Voltar ao site</a></nav>
+    </header>
+
+    <main class="section">
+
+        <!-- Tela de senha -->
+        <div id="tela-login" class="caixa">
+            <h2>Acesso do administrador</h2>
+            <input type="password" id="campo-senha" placeholder="Senha do administrador">
+            <button onclick="entrarAdmin()">Entrar</button>
+            <div class="aviso" id="aviso-login"></div>
+        </div>
+
+        <!-- Painel (só aparece depois da senha correta) -->
+        <div id="painel" class="oculto">
+
+            <div class="caixa">
+                <h2>Criar disputa</h2>
+                <input type="text" id="novo-titulo" placeholder="Título (ex.: Pedra, papel e tesoura)">
+                <input type="text" id="novo-descricao" placeholder="Descrição (opcional)">
+                <input type="text" id="novo-opcao-a" placeholder="Opção A (ex.: Colega 1)">
+                <input type="text" id="novo-opcao-b" placeholder="Opção B (ex.: Colega 2)">
+                <button onclick="criarDisputa()">Criar disputa</button>
+            </div>
+
+            <div class="aviso" id="aviso-painel"></div>
+
+            <h2 style="margin-top: 24px;">Disputas</h2>
+                        <button class="perigo" style="margin-bottom: 14px;" onclick="limparFinalizadas()">Apagar todas as disputas finalizadas</button>
+            <div id="lista-admin">Carregando...</div>
+
+            <button class="secundario" style="margin-top: 16px;" onclick="sairAdmin()">Sair do painel</button>
+        </div>
+
+    </main>
+
+<script>
+// A senha fica só na aba do navegador e some quando a aba é fechada
+function pegarSenha() {
+    return sessionStorage.getItem('admin_senha');
+}
+
+function mostrarAviso(texto) {
+    document.getElementById('aviso-painel').textContent = texto;
+}
+
+// Faz uma chamada ao servidor enviando a senha do administrador
+async function chamarAdmin(url, metodo, corpo) {
+    const resposta = await fetch(url, {
+        method: metodo,
+        headers: {
+            'Content-Type': 'application/json',
+            'x-admin-senha': pegarSenha() || ''
+        },
+        body: corpo ? JSON.stringify(corpo) : undefined
+    });
+
+    const dados = await resposta.json();
+
+    // Senha recusada pelo servidor: volta para a tela de senha
+    if (resposta.status === 401) {
+        sairAdmin();
+    }
+
+    return { ok: resposta.ok, dados: dados };
+}
+
+// Confere a senha digitada
+async function entrarAdmin() {
+    const campo = document.getElementById('campo-senha');
+    const aviso = document.getElementById('aviso-login');
+
+    sessionStorage.setItem('admin_senha', campo.value);
+
+    try {
+        const resultado = await chamarAdmin('/api/admin/verificar', 'POST');
+
+        if (!resultado.ok) {
+            aviso.textContent = 'Senha incorreta.';
+            return;
+        }
+
+        campo.value = '';
+        aviso.textContent = '';
+        mostrarPainel();
+
+    } catch (erro) {
+        console.error(erro);
+        aviso.textContent = 'Não foi possível conectar ao servidor.';
+    }
+}
+
+function mostrarPainel() {
+    document.getElementById('tela-login').classList.add('oculto');
+    document.getElementById('painel').classList.remove('oculto');
+    carregarDisputasAdmin();
+}
+
+function sairAdmin() {
+    sessionStorage.removeItem('admin_senha');
+    document.getElementById('painel').classList.add('oculto');
+    document.getElementById('tela-login').classList.remove('oculto');
+}
+
+// Mostra todas as disputas com os botões de encerrar e cancelar
+async function carregarDisputasAdmin() {
+    const lista = document.getElementById('lista-admin');
+
+    try {
+        const resultado = await chamarAdmin('/api/admin/disputas', 'GET');
+
+        if (!resultado.ok) {
+            lista.textContent = 'Não foi possível carregar as disputas.';
+            return;
+        }
+
+        const disputas = resultado.dados;
+
+        if (disputas.length === 0) {
+            lista.textContent = 'Nenhuma disputa criada ainda.';
+            return;
+        }
+
+        lista.innerHTML = disputas.map(d => {
+            let acoes = '';
+            let extra = '';
+
+            if (d.status === 'aberta') {
+                acoes = `
+                    <button onclick="encerrar(${d.id}, 'A')">Vence: ${d.opcao_a}</button>
+                    <button onclick="encerrar(${d.id}, 'B')">Vence: ${d.opcao_b}</button>
+                    <button class="perigo" onclick="cancelar(${d.id})">Cancelar disputa</button>
+                `;
+            }
+
+            if (d.status === 'encerrada') {
+                const vencedora = d.resultado === 'A' ? d.opcao_a : d.opcao_b;
+                extra = `<br>Vencedor: ${vencedora} · a casa ficou com ${d.valor_casa} ouro`;
+            }
+
+            if (d.status !== 'aberta') {
+                acoes = `<button class="perigo" onclick="apagar(${d.id})">Apagar disputa e apostas</button>`;
+            }
+            return `
+                <div class="disputa">
+                    <h3>${d.titulo}</h3>
+                    <p>
+                        ${d.opcao_a} x ${d.opcao_b}<br>
+                        ${d.qtd_apostas} aposta(s) · ${d.total_apostado} ouro apostado · status: ${d.status}
+                        ${extra}
+                    </p>
+                    <div class="acoes">${acoes}</div>
+                </div>
+            `;
+        }).join('');
+
+    } catch (erro) {
+        console.error(erro);
+        lista.textContent = 'Erro ao carregar as disputas.';
+    }
+}
+
+// Cria uma disputa nova
+async function criarDisputa() {
+    const corpo = {
+        titulo: document.getElementById('novo-titulo').value,
+        descricao: document.getElementById('novo-descricao').value,
+        opcao_a: document.getElementById('novo-opcao-a').value,
+        opcao_b: document.getElementById('novo-opcao-b').value
+    };
+
+    try {
+        const resultado = await chamarAdmin('/api/admin/disputas', 'POST', corpo);
+
+        if (!resultado.ok) {
+            mostrarAviso(resultado.dados.mensagem);
+            return;
+        }
+
+        document.getElementById('novo-titulo').value = '';
+        document.getElementById('novo-descricao').value = '';
+        document.getElementById('novo-opcao-a').value = '';
+        document.getElementById('novo-opcao-b').value = '';
+
+        mostrarAviso('Disputa criada!');
+        carregarDisputasAdmin();
+
+    } catch (erro) {
+        console.error(erro);
+        mostrarAviso('Não foi possível criar a disputa.');
+    }
+}
+
+// Encerra a disputa com o resultado oficial e paga os vencedores
+async function encerrar(id, opcao) {
+    if (!confirm('Encerrar esta disputa com vitória da opção ' + opcao + '? Os vencedores serão pagos e isso não pode ser desfeito.')) {
+        return;
+    }
+
+    try {
+        const resultado = await chamarAdmin('/api/admin/disputas/' + id + '/encerrar', 'POST', { resultado: opcao });
+
+        if (!resultado.ok) {
+            mostrarAviso(resultado.dados.mensagem);
+            return;
+        }
+
+        const d = resultado.dados;
+        mostrarAviso('Disputa encerrada! Total apostado: ' + d.total_apostado +
+                     ' · pago aos vencedores: ' + d.total_pago +
+                     ' · ficou com a casa: ' + d.valor_casa);
+        carregarDisputasAdmin();
+
+    } catch (erro) {
+        console.error(erro);
+        mostrarAviso('Não foi possível encerrar a disputa.');
+    }
+}
+
+// Cancela a disputa e devolve o ouro apostado
+async function cancelar(id) {
+    if (!confirm('Cancelar esta disputa? Todo o ouro apostado será devolvido e isso não pode ser desfeito.')) {
+        return;
+    }
+
+    try {
+        const resultado = await chamarAdmin('/api/admin/disputas/' + id + '/cancelar', 'POST');
+
+        mostrarAviso(resultado.dados.mensagem);
+
+        if (resultado.ok) {
+            carregarDisputasAdmin();
+        }
+
+    } catch (erro) {
+        console.error(erro);
+        mostrarAviso('Não foi possível cancelar a disputa.');
+    }
+}
+// Apaga uma disputa finalizada e as apostas dela
+async function apagar(id) {
+    if (!confirm('Apagar esta disputa e todas as apostas dela? Isso não pode ser desfeito. Os saldos dos participantes não mudam.')) {
+        return;
+    }
+
+    try {
+        const resultado = await chamarAdmin('/api/admin/disputas/' + id, 'DELETE');
+
+        mostrarAviso(resultado.dados.mensagem);
+
+        if (resultado.ok) {
+            carregarDisputasAdmin();
+        }
+
+    } catch (erro) {
+        console.error(erro);
+        mostrarAviso('Não foi possível apagar a disputa.');
+    }
+}
+
+// Apaga todas as disputas encerradas ou canceladas de uma vez
+async function limparFinalizadas() {
+    if (!confirm('Apagar TODAS as disputas encerradas e canceladas, com suas apostas? Isso não pode ser desfeito.')) {
+        return;
+    }
+
+    try {
+        const resultado = await chamarAdmin('/api/admin/limpar-finalizadas', 'POST');
+
+        mostrarAviso(resultado.dados.mensagem);
+
+        if (resultado.ok) {
+            carregarDisputasAdmin();
+        }
+
+    } catch (erro) {
+        console.error(erro);
+        mostrarAviso('Não foi possível apagar as disputas.');
+    }
+}
+// Aperte Enter no campo de senha para entrar
+document.getElementById('campo-senha').addEventListener('keydown', function (evento) {
+    if (evento.key === 'Enter') {
+        entrarAdmin();
+    }
+});
+
+// Se a senha já estiver guardada nesta aba, entra direto
+if (pegarSenha()) {
+    chamarAdmin('/api/admin/verificar', 'POST').then(resultado => {
+        if (resultado.ok) {
+            mostrarPainel();
+        }
+    });
+}
+</script>
+
+</body>
+</html>

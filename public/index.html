@@ -1,0 +1,618 @@
+
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo Limpo</title>
+
+        <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0b0d0b;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        header {
+            padding: 24px 8%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #202720;
+        }
+
+        .logo {
+            color: #39d66b;
+            font-size: 26px;
+            font-weight: bold;
+        }
+
+        nav a {
+            color: #ccc;
+            text-decoration: none;
+            margin-left: 25px;
+            font-size: 14px;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 100px 20px;
+        }
+
+        .hero h1 {
+            font-size: 52px;
+            margin-bottom: 15px;
+        }
+
+        .hero h1 span {
+            color: #39d66b;
+        }
+
+        .hero p {
+            color: #aaa;
+            font-size: 17px;
+        }
+
+        .section {
+            padding: 30px 8%;
+        }
+
+        .section h2 {
+            margin-bottom: 20px;
+        }
+
+        .empty {
+            background: #141914;
+            border: 1px solid #29352b;
+            border-radius: 12px;
+            padding: 35px;
+            text-align: center;
+            color: #999;
+        }
+
+        .disputa {
+            background: #141914;
+            border: 1px solid #29352b;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+
+        .disputa h3 {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        .disputa p {
+            color: #aaa;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .opcoes {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .opcoes span {
+            flex: 1;
+            text-align: center;
+            background: #0b0d0b;
+            border: 1px solid #39d66b;
+            color: #39d66b;
+            border-radius: 8px;
+            padding: 12px;
+            font-weight: bold;
+        }
+
+        .disputa small {
+            color: #777;
+        }
+
+        footer {
+            margin-top: 80px;
+            padding: 25px;
+            text-align: center;
+            border-top: 1px solid #202720;
+            color: #777;
+            font-size: 13px;
+        }
+               .opcoes button {
+            flex: 1;
+            background: #0b0d0b;
+            border: 1px solid #39d66b;
+            color: #39d66b;
+            border-radius: 8px;
+            padding: 12px;
+            font-weight: bold;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .opcoes button.selecionado {
+            background: #39d66b;
+            color: #0b0d0b;
+        }
+
+        .valores {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .valores button {
+            flex: 1;
+            background: #0b0d0b;
+            border: 1px solid #29352b;
+            color: #ccc;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .valores button.selecionado {
+            background: #1a261c;
+            border-color: #39d66b;
+            color: #39d66b;
+        }
+
+        .apostar {
+            width: 100%;
+            background: #39d66b;
+            color: #0b0d0b;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-weight: bold;
+            font-size: 15px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .apostar:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .msg-aposta {
+            font-size: 14px;
+            color: #aaa;
+            margin-bottom: 8px;
+        }
+
+        .resultado-final {
+            background: #0b0d0b;
+            border: 1px solid #29352b;
+            border-radius: 8px;
+            padding: 14px;
+            color: #ccc;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        #area-jogador {
+            text-align: right;
+            font-size: 14px;
+            color: #ccc;
+        }
+
+        #area-jogador input {
+            background: #141914;
+            border: 1px solid #29352b;
+            color: white;
+            border-radius: 8px;
+            padding: 8px 10px;
+            margin-right: 6px;
+        }
+
+        #area-jogador button {
+            background: #39d66b;
+            color: #0b0d0b;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: 6px;
+        }
+
+        #area-jogador button:hover {
+            opacity: 0.85;
+        }
+
+        #area-jogador button.secundario {
+            background: transparent;
+            color: #ccc;
+            border: 1px solid #29352b;
+        }
+
+        #saldo-jogador {
+            color: #39d66b;
+            font-weight: bold;
+        }
+
+        #msg-jogador {
+            display: block;
+            margin-top: 6px;
+            color: #aaa;
+        }
+
+        .oculto {
+            display: none;
+        }
+        @media (max-width: 600px) {
+            header {
+                flex-direction: column;
+                gap: 18px;
+            }
+        
+            nav a {
+                margin: 0 8px;
+            }
+
+            .hero h1 {
+                font-size: 36px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">JOGO LIMPO</div>
+
+        <nav>
+            <a href="#">Início</a>
+            <a href="#partidas">Partidas</a>
+            <a href="#sobre">Sobre</a>
+        </nav>
+                <div id="area-jogador">
+                       <div id="entrada" class="oculto">
+                <input type="text" id="campo-nome" placeholder="Nome" maxlength="30">
+                <input type="password" id="campo-senha" placeholder="Senha" maxlength="50">
+                <button onclick="entrar()">Entrar</button>
+                <button class="secundario" onclick="criarConta()">Criar conta</button>
+            </div>
+
+            <div id="painel-jogador" class="oculto">
+                Olá, <strong id="nome-jogador"></strong> ·
+                <span id="saldo-jogador"></span> ouro
+                <button onclick="receberRecompensa()">Recompensa diária</button>
+                <button class="secundario" onclick="sair()">Sair</button>
+            </div>
+
+            <small id="msg-jogador"></small>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h1>Recupere o <span>controle</span>.</h1>
+            <p>Não caia na pegadinha das bets.</p>
+        </section>
+
+        <section class="section" id="partidas">
+            
+<h2>Disputas disponíveis</h2>
+
+<div id="lista-disputas">
+    <div class="empty">
+        Carregando disputas...
+    </div>
+</div>
+</section>
+       <section class="section" id="sobre">
+    <h2>Sobre o Jogo Limpo</h2>
+
+    <div class="empty">
+        Um simulador educativo sobre apostas desenvolvido para um trabalho escolar, sem fins lucrativos (da 10 paulinhaaaaaa). O ouro é fictício e não vale dinheiro. Aqui você aposta, acompanha o resultado oficial e vê, com números, como a casa sempre sai ganhando.
+    </div>
+</section>
+    </main>
+
+    <footer>
+               Jogo Limpo <a href="/admin.html" style="color: inherit; text-decoration: none; cursor: default;">©</a> 2026 — Sua vida vale bem mais que uma aposta.
+    </footer>
+
+<script>
+// Guarda o que a pessoa escolheu em cada disputa. Exemplo: { 2: { opcao: 'A', valor: 100 } }
+const escolhas = {};
+
+// Monta o cartão HTML de uma disputa
+function montarCartao(disputa) {
+    let opcoesHtml = '';
+    let parteInferior = '';
+
+    if (disputa.status === 'aberta') {
+        // Disputa aberta: opções e valores são botões clicáveis
+        opcoesHtml = `
+            <button id="opcao-${disputa.id}-A" onclick="escolherOpcao(${disputa.id}, 'A')">${disputa.opcao_a}</button>
+            <button id="opcao-${disputa.id}-B" onclick="escolherOpcao(${disputa.id}, 'B')">${disputa.opcao_b}</button>
+        `;
+
+        const botoesValores = [10, 50, 100, 500].map(valor => `
+            <button id="valor-${disputa.id}-${valor}" onclick="escolherValor(${disputa.id}, ${valor})">${valor}</button>
+        `).join('');
+
+        parteInferior = `
+            <div class="valores">${botoesValores}</div>
+            <button class="apostar" id="apostar-${disputa.id}" onclick="apostar(${disputa.id})">Apostar</button>
+        `;
+    } else {
+        // Disputa encerrada ou cancelada: só mostra as opções, sem botões
+        opcoesHtml = `
+            <span>${disputa.opcao_a}</span>
+            <span>${disputa.opcao_b}</span>
+        `;
+
+        if (disputa.status === 'encerrada') {
+            const vencedora = disputa.resultado === 'A' ? disputa.opcao_a : disputa.opcao_b;
+
+            parteInferior = `
+                <div class="resultado-final">
+                    Resultado oficial: <strong>${vencedora}</strong><br>
+                    A casa ficou com ${disputa.valor_casa} ouro.
+                </div>
+            `;
+        } else if (disputa.status === 'cancelada') {
+            parteInferior = `
+                <div class="resultado-final">
+                    Disputa cancelada. O ouro apostado foi devolvido.
+                </div>
+            `;
+        }
+    }
+
+    return `
+        <div class="disputa">
+            <h3>${disputa.titulo}</h3>
+            <p>${disputa.descricao || ''}</p>
+
+            <div class="opcoes">${opcoesHtml}</div>
+
+            ${parteInferior}
+
+            <div class="msg-aposta" id="msg-${disputa.id}"></div>
+            <small>Status: ${disputa.status}</small>
+        </div>
+    `;
+}
+
+// Busca as disputas no servidor e mostra na página
+async function carregarDisputas() {
+    const lista = document.getElementById('lista-disputas');
+
+    try {
+        const resposta = await fetch('/api/disputas');
+
+        if (!resposta.ok) {
+            throw new Error('Erro ao buscar disputas');
+        }
+
+        const disputas = await resposta.json();
+
+        if (disputas.length === 0) {
+            lista.innerHTML = `
+                <div class="empty">
+                    Ainda não existem disputas cadastradas.
+                </div>
+            `;
+            return;
+        }
+
+        lista.innerHTML = disputas.map(montarCartao).join('');
+
+    } catch (erro) {
+        console.error(erro);
+
+        lista.innerHTML = `
+            <div class="empty">
+                Não foi possível carregar as disputas.
+            </div>
+        `;
+    }
+}
+
+// Marca a opção (A ou B) escolhida em uma disputa
+function escolherOpcao(idDisputa, opcao) {
+    if (!escolhas[idDisputa]) {
+        escolhas[idDisputa] = {};
+    }
+
+    escolhas[idDisputa].opcao = opcao;
+
+    document.getElementById('opcao-' + idDisputa + '-A').classList.toggle('selecionado', opcao === 'A');
+    document.getElementById('opcao-' + idDisputa + '-B').classList.toggle('selecionado', opcao === 'B');
+}
+
+// Marca o valor escolhido em uma disputa
+function escolherValor(idDisputa, valor) {
+    if (!escolhas[idDisputa]) {
+        escolhas[idDisputa] = {};
+    }
+
+    escolhas[idDisputa].valor = valor;
+
+    [10, 50, 100, 500].forEach(v => {
+        document.getElementById('valor-' + idDisputa + '-' + v).classList.toggle('selecionado', v === valor);
+    });
+}
+
+// Envia a aposta para o servidor
+async function apostar(idDisputa) {
+    const msg = document.getElementById('msg-' + idDisputa);
+    const jogadorId = localStorage.getItem('jogador_id');
+    const escolha = escolhas[idDisputa] || {};
+
+    if (!jogadorId) {
+        msg.textContent = 'Entre ou crie uma conta para apostar.';
+        return;
+    }
+
+    if (!escolha.opcao || !escolha.valor) {
+        msg.textContent = 'Escolha uma opção e um valor antes de apostar.';
+        return;
+    }
+
+    try {
+        const resposta = await fetch('/api/disputas/' + idDisputa + '/apostas', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                participante_id: Number(jogadorId),
+                opcao: escolha.opcao,
+                valor: escolha.valor
+            })
+        });
+
+        const dados = await resposta.json();
+        msg.textContent = dados.mensagem;
+
+        if (resposta.ok) {
+            // Aposta feita: trava o botão e atualiza o saldo no topo
+            document.getElementById('apostar-' + idDisputa).disabled = true;
+            carregarJogador();
+        }
+
+    } catch (erro) {
+        console.error(erro);
+        msg.textContent = 'Não foi possível registrar a aposta.';
+    }
+}
+carregarDisputas();
+
+// ---------- Jogador: entrada, saldo e recompensa diária ----------
+
+function mostrarAviso(texto) {
+    document.getElementById('msg-jogador').textContent = texto;
+}
+
+// Mostra o formulário de entrada ou o painel com o saldo
+async function carregarJogador() {
+    const entrada = document.getElementById('entrada');
+    const painel = document.getElementById('painel-jogador');
+    const id = localStorage.getItem('jogador_id');
+
+    // Sem id guardado: ninguém entrou ainda
+    if (!id) {
+        entrada.classList.remove('oculto');
+        painel.classList.add('oculto');
+        return;
+    }
+
+    try {
+        const resposta = await fetch('/api/participantes/' + id);
+
+        // Conta não existe mais no banco: limpa e pede para entrar de novo
+        if (resposta.status === 404) {
+            localStorage.removeItem('jogador_id');
+            entrada.classList.remove('oculto');
+            painel.classList.add('oculto');
+            return;
+        }
+
+        if (!resposta.ok) {
+            throw new Error('Erro ao buscar o jogador');
+        }
+
+        const jogador = await resposta.json();
+
+        document.getElementById('nome-jogador').textContent = jogador.nome;
+        document.getElementById('saldo-jogador').textContent = jogador.saldo;
+
+        entrada.classList.add('oculto');
+        painel.classList.remove('oculto');
+
+    } catch (erro) {
+        console.error(erro);
+        mostrarAviso('Não foi possível carregar seu saldo.');
+    }
+}
+
+// Envia nome e senha para o servidor (usado por "Entrar" e "Criar conta")
+async function enviarCredenciais(url, mensagemSucesso) {
+    const campoNome = document.getElementById('campo-nome');
+    const campoSenha = document.getElementById('campo-senha');
+    const nome = campoNome.value.trim();
+    const senha = campoSenha.value;
+
+    if (nome === '' || senha === '') {
+        mostrarAviso('Preencha o nome e a senha.');
+        return;
+    }
+
+    try {
+        const resposta = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nome: nome, senha: senha })
+        });
+
+        const jogador = await resposta.json();
+
+        if (!resposta.ok) {
+            mostrarAviso(jogador.mensagem);
+            return;
+        }
+
+        localStorage.setItem('jogador_id', jogador.id);
+        campoNome.value = '';
+        campoSenha.value = '';
+        mostrarAviso(mensagemSucesso);
+        carregarJogador();
+
+    } catch (erro) {
+        console.error(erro);
+        mostrarAviso('Não foi possível conectar ao servidor.');
+    }
+}
+
+function entrar() {
+    enviarCredenciais('/api/entrar', 'Bem-vindo de volta!');
+}
+
+function criarConta() {
+    enviarCredenciais('/api/participantes', 'Conta criada! Você começa com 1000 ouro.');
+}
+
+// Pede a recompensa diária ao servidor
+async function receberRecompensa() {
+    const id = localStorage.getItem('jogador_id');
+
+    try {
+        const resposta = await fetch('/api/participantes/' + id + '/recompensa', {
+            method: 'POST'
+        });
+
+        const dados = await resposta.json();
+
+        mostrarAviso(dados.mensagem);
+        carregarJogador();
+
+    } catch (erro) {
+        console.error(erro);
+        mostrarAviso('Não foi possível pegar a recompensa.');
+    }
+}
+
+// Sai da conta neste navegador
+function sair() {
+    localStorage.removeItem('jogador_id');
+    mostrarAviso('');
+    carregarJogador();
+}
+
+carregarJogador();
+</script>
+
+</body>
+</html>
