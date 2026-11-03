@@ -7,9 +7,9 @@ const bcrypt = require('bcryptjs');
 const app = express();
 const PORT = 3000;
 
-// Conexão com o banco de dados no Supabase / Nuvem
+// Conexão com o banco de dados usando a variável de ambiente do Render/Supabase
 const db = new Pool({
-    connectionString: "postgresql://postgres.niskasdxceytqppsotpd:LuKeLaDy.17@aws-0-sa-east-1.pooler.supabase.com:6543/postgres",
+    connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false }
 });
 // Entregar os arquivos do site
